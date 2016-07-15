@@ -10,7 +10,9 @@
 // then click the URL that is emitted to the Output tab of the console
 
 // get host name from URL
-$EXTRACTED_DATA = array();
+$EXTRACTED_PAPER_DATA = array();
+$EXTRACTED_SUMMARY_DATA = array();
+
 function regexForm($s){
     $s = str_replace("/", "\/", $s);
     $s = str_replace(".","\.", $s);
@@ -21,9 +23,8 @@ function regexForm($s){
     return $s;
 }
 
-//get user url
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://scholar.google.co.id/citations?user=4KgDYWkAAAAJ&hl=id&oi=ao&pagesize=100');
+curl_setopt($ch, CURLOPT_URL, 'http://scholar.google.com/citations?user=Ckl2XTkAAAAJ&pagesize=100');
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -31,6 +32,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 $data = curl_exec($ch);
 
+//GET PAPER DETAIL
 $left = regexForm('<table id="gsc_a_t">');
 $right = regexForm('</table>');
 $regex = "/$left(.*?)$right/s";
@@ -38,18 +40,14 @@ $matches = array();
 preg_match_all($regex, $data, $matches);
 
 $tableData = $matches[0][0];
-//print_r($tableData);
 
-
-//get the row
+    //get the row
 $left= regexForm('<tr class="gsc_a_tr">');
 $right = regexForm('</tr>');
 $regex = "/$left(.*?)$right/s";
 $matches = array();
 preg_match_all($regex, $tableData, $matches);
 $tableRows = $matches[0];
-
-//print_r($matches);
 
 foreach($tableRows as $row){
 
@@ -61,10 +59,46 @@ foreach($tableRows as $row){
     preg_match_all($regex, $row, $matches);
     //print_r($matches[0]);
     $detail = array('makalah' => $matches[0][0], 'cited' => $matches[0][1], 'year' => $matches[0][2]);
-    $EXTRACTED_DATA[] = $detail;
+    $EXTRACTED_PAPER_DATA[] = $detail;
 }
 
-print_r($EXTRACTED_DATA);
+//GET USER SUMMARY DETAIL
+    //get table
+$left= regexForm('<table id="gsc_rsb_st">');
+$right = regexForm('</table>');
+$regex = "/$left(.*?)$right/s";
+$matches = array();
+preg_match_all($regex, $data, $matches);
+$tableSummary = $matches[0][0];
+    //get row
+$left= regexForm('<tr>');
+$right = regexForm('</tr>');
+$regex = "/$left(.*?)$right/s";
+$matches = array();
+preg_match_all($regex, $tableSummary, $matches);
+$rowCitation = $matches[0][1];
+$rowHindex = $matches[0][2];
+
+    //get citation & hindex
+$getDetail = $rowCitation . $rowHindex;
+$left=regexForm('<td class="gsc_rsb_std">');
+$right= regexForm('</td>');
+$regex = "/$left(.*?)$right/s";
+$matches = array();
+preg_match_all($regex, $getDetail, $matches);
+$userDetail = array('citation' => $matches[0][0], 'hindex' => $matches[0][2]);
+$EXTRACTED_SUMMARY_DATA = $userDetail;
+
+//PRINT
+echo "Citation : " . $EXTRACTED_SUMMARY_DATA[citation] . "<br>";
+echo "H-Index : " . $EXTRACTED_SUMMARY_DATA[hindex] . "<br><br>";
+
+$totalPaper = sizeof($EXTRACTED_PAPER_DATA);
+for($i=0; $i<$totalPaper; $i++){
+    echo "Paper : " . $EXTRACTED_PAPER_DATA[$i][makalah];
+    echo "Citedby : " . $EXTRACTED_PAPER_DATA[$i][cited] . "<br>";
+    echo "Year : " . $EXTRACTED_PAPER_DATA[$i][year] . "<br><br>";
+}
 
 ?>
 </body>
