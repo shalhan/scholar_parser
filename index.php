@@ -24,7 +24,7 @@ function regexForm($s){
 }
 
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://scholar.google.com/citations?user=Ckl2XTkAAAAJ&pagesize=100');
+curl_setopt($ch, CURLOPT_URL, 'http://scholar.google.com/citations?user=CDIv9k0AAAAJ&pagesize=1000');
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -89,11 +89,22 @@ preg_match_all($regex, $getDetail, $matches);
 $userDetail = array('citation' => $matches[0][0], 'hindex' => $matches[0][2]);
 $EXTRACTED_SUMMARY_DATA = $userDetail;
 
-//PRINT
-echo "Citation : " . $EXTRACTED_SUMMARY_DATA[citation] . "<br>";
-echo "H-Index : " . $EXTRACTED_SUMMARY_DATA[hindex] . "<br><br>";
+    //get nama
+$left= regexForm('<div id="gsc_prf_in">');
+$right = regexForm('</div>');
+$regex = "/$left(.*?)$right/s";
+$matches = array();
+preg_match_all($regex, $data, $matches);
+
+$userNama = $matches[1][0];
 
 $totalPaper = sizeof($EXTRACTED_PAPER_DATA);
+//PRINT
+echo "Nama : " . $userNama . "<br>";
+echo "Citation : " . $EXTRACTED_SUMMARY_DATA[citation] . "<br>";
+echo "H-Index : " . $EXTRACTED_SUMMARY_DATA[hindex] . "<br>";
+echo "Total Paper : " . $totalPaper . "<br><br>";
+
 for($i=0; $i<$totalPaper; $i++){
     echo "Paper : " . $EXTRACTED_PAPER_DATA[$i][makalah];
     echo "Citedby : " . $EXTRACTED_PAPER_DATA[$i][cited] . "<br>";
