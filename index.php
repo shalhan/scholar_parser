@@ -10,6 +10,7 @@
 // then click the URL that is emitted to the Output tab of the console
 
 // get host name from URL
+
 $USER_DATA = array();
 $EXTRACTED_PAPER_DATA = array();
 $EXTRACTED_SUMMARY_DATA = array();
@@ -69,6 +70,8 @@ foreach($tableRows as $row){
     $paperJudul = array();
     preg_match_all($regex, $paperDetail, $paperJudul);
 
+    //print_r($paperJudul);
+
         //author & journal
     $paperDetail= $matches[0][0];
     $left=regexForm('<div class="gs_gray">');
@@ -78,10 +81,10 @@ foreach($tableRows as $row){
     preg_match_all($regex, $paperDetail, $paperAJ);
 
     $detail = array(
-        'judul' => $paperJudul[0][0],
+        'judul' => preg_replace('#<a.*?>([^>]*)</a>#i', '$1', $paperJudul[0][0]),
         'author' => $paperAJ[1][0],
         'journal' => $paperAJ[1][1],
-        'cited' => str_replace("*","",$matches[0][1]),
+        'cited' => preg_replace('#<a.*?>([^>]*)</a>#i', '$1', str_replace("*","",$matches[0][1])),
         'year' => $matches[0][2]
     );
     $EXTRACTED_PAPER_DATA[] = $detail;
@@ -143,6 +146,8 @@ for($i=0; $i<$totalPaper; $i++){
     echo "Citedby : " . $EXTRACTED_PAPER_DATA[$i][cited] . "<br>";
     echo "Year : " . $EXTRACTED_PAPER_DATA[$i][year] . "<br><br>";
 }
+
+
 
 ?>
 </body>
